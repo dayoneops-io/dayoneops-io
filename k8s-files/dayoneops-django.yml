@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dayoneopsio-django-deployment
+  labels:
+    app: dayoneopsio-django
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dayoneopsio-django
+  template:
+    metadata:
+      labels:
+        app: dayoneopsio-django
+    spec:
+      containers:
+      - name: dayoneopsio-django
+        image: Amazon.io/dayoneopsio/dayoneopsio-django:0.0.1
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c"]
+        args:
+          - python3 manage.py migrate --noinput; python3 manage.py runserver 0.0.0.0:4000;
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DBUSER
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: user
+        - name: DBPASS
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: password
+        - name: DBSECRETKEY
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: secretkey
+        - name: DBNAME
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: dbname
+        - name: DBPORT
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: dbport
+        - name: DBHOST
+          valueFrom:
+            secretKeyRef:
+              name: dayoneopsio-creds
+              key: dbendpoint
+        - name: DEBUGLOG
+          value: 'TRUE'
+      imagePullSecrets:
+      - name: acrsecret1
